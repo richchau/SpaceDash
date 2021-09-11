@@ -17,6 +17,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameTimer: Timer?
     var isGameOver = false
     
+    var enemiesSpawned = 0
+    var interval = 1.0
+    
     var score = 0 {
         didSet{
             scoreLabel.text = "Score: \(score)"
@@ -48,9 +51,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.gravity = .zero
         physicsWorld.contactDelegate = self
         
-        gameTimer = Timer.scheduledTimer(timeInterval: 0.35, target: self, selector: #selector(createEnemy), userInfo: nil, repeats: true)
+        startTimer()
         
     }
+    
+    func startTimer(){
+        gameTimer?.invalidate()
+        gameTimer = Timer.scheduledTimer(timeInterval: interval, target: self, selector: #selector(createEnemy), userInfo: nil, repeats: true)
+    }
+    
+    
     
     @objc func createEnemy(){
         guard let enemy = possibleEnemies.randomElement() else {return}
@@ -65,6 +75,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         sprite.physicsBody?.angularVelocity = 5
         sprite.physicsBody?.linearDamping = 0
         sprite.physicsBody?.angularDamping = 0
+        
+        enemiesSpawned += 1
+        
+        if(enemiesSpawned == 20){
+            enemiesSpawned = 0
+            interval -= 0.1
+            startTimer()
+        }
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -93,6 +111,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         player.position = location
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // implement here
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
